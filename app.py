@@ -1,4 +1,5 @@
-from apis import SpotifyAPI, GeniusAPI
+from apis import GeniusAPI
+from apis.SpotifyAPI import index as SpotifyAPI
 from controllers.playlistExtractor import getTracks, getTrackNames
 from controllers.lyricsExtractor import getTopLyricsUrl
 from controllers.webscraper import scrapeLyricsFromURL

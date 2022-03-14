@@ -5,7 +5,7 @@ Mohammad Arafat Zaman
 © 2022
 All rights reserved
 '''
-from apis.SpotifyAPI import SpotifyAPI
+from apis.SpotifyAPI.index import SpotifyAPI
 from apis.GeniusAPI import GeniusAPI
 from controllers.playlistExtractor import getTracks, getTrackNames
 from controllers.lyricsExtractor import getTopLyricsUrl
@@ -40,8 +40,11 @@ if __name__ == "__main__":
 
     app = LyricsFinder(CLIENT_ID, CLIENT_SECRET, GENIUS_ACCESS_TOKEN)
 
-    searchReturn = app.searchPlaylist("https://open.spotify.com/playlist/1dNDQQwOmMkxsGWlngjaDK?si=baf37b5bf291487f", "empty")
-    print(searchReturn)
+    playlistData = app.SpotifyAPI.getPlaylistByID("0EXoQPnNMvYKnGp3hyhTQj")
+    #print(playlistData)
+
+    """ searchReturn = app.searchPlaylist("https://open.spotify.com/playlist/1dNDQQwOmMkxsGWlngjaDK?si=baf37b5bf291487f", "empty")
+    print(searchReturn) """
 
 
 

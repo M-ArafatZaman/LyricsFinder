@@ -3,7 +3,7 @@ from utils.utils import print_DT
 
 class SpotifyAPI:
 
-    def __init__(self, clientID, clientSecret, _print=True):
+    def __init__(self, clientID, clientSecret, _print=False):
         self.print = _print
         self.clientID = clientID
         self.clientSecret = clientSecret
@@ -17,7 +17,7 @@ class SpotifyAPI:
             pass
         else:
             # Get token
-            self.getAccessToken()
+            response = self.getAccessToken()
 
     # Check for prestored access tokens
     def checkForAccessTokens(self):
@@ -56,8 +56,9 @@ class SpotifyAPI:
 
         except Exception:
             # If an error occurs when reading the access_token.json file, just get another one
-            print_DT("An error occured when trying to open access_token.json")
-            print_DT("Preparing to get a new one.")
+            if self.print:
+                print_DT("An error occured when trying to open access_token.json")
+                print_DT("Preparing to get a new one.")
             return False
 
 
@@ -90,17 +91,22 @@ class SpotifyAPI:
         # Process response
         if response.status_code != 200:
             # Print error details and raise exception
-            print_DT("Failed to get OAuth access token. Please check if you have provided your client credentials correctly.")
-            print(f"\tResponse status: {response.status_code}")
-            print(f"\tError message: {responseJson['error']}")
+            if self.print:
+                print_DT("Failed to get OAuth access token. Please check if you have provided your client credentials correctly.")
+                print(f"\tResponse status: {response.status_code}")
+                print(f"\tError message: {responseJson['error']}")
 
-            raise Exception("Failed to get OAuth access token. Please check if you have provided your client credentials correctly.") 
+            # Failed to get a token
+            return False
+
         else:
             # Store access token
             if self.print: print_DT("Successfully received access token.")
             self.access_token = responseJson["access_token"]
             self.updateAccessToken(responseJson)
 
+            # Successfully retrieved a valid token
+            return True
 
 
     # Update access_token.json
@@ -149,18 +155,34 @@ class SpotifyAPI:
         if self.print: print_DT("Details cleared.")
 
 
+    # Get bearer headers
+    def getBearerHeaders(self):
+        '''
+        This method returns the a header object with Authorization key and bearer access token
+        '''
+        if self.access_token != None:
+            headers = {
+                'Authorization': f"Bearer {self.access_token}"
+            }
+
+            return headers
+        else:
+            return None
+
     
     # Get a playlist from the api 
     def getPlaylistByID(self, id):
         '''
         Documentation - https://developer.spotify.com/console/get-playlist/
         '''
+        returnData = {
+            "status": False,
+            "data": {}
+        }
 
         # Even though this endpoint contains tracks, it will only be used to collect basic playlist info.
         endpoint = f'https://api.spotify.com/v1/playlists/{id}'
-        headers = {
-            'Authorization': f"Bearer {self.access_token}"
-        }
+        headers = self.getBearerHeaders()
 
         # Send request
         if self.print: print_DT("Retrieving playlist details...")
@@ -171,19 +193,41 @@ class SpotifyAPI:
 
         # Process response
         if response.status_code != 200:
-            print_DT("Failed to retrieve playlist details.")
-            print(f"\tResponse status: {response.status_code}")
-            print(f"\tError message: {responseJson['error']['message']}")
+            # Failed to get playlist details
+            if self.print:
+                print_DT("Failed to retrieve playlist details.")
+                print(f"\tResponse status: {response.status_code}")
+                print(f"\tError message: {responseJson['error']['message']}")
+            
+            return returnData
+
         else:
+            
             if self.print: print_DT(f"Successfully retrieved playlist details => {responseJson['name']} by {responseJson['owner']['display_name']}")
 
             if self.print: print_DT(f"Retrieving tracks from '{responseJson['name']}'...")
+
+            returnData["status"] = True
+            returnData["data"]["name"] = responseJson['name']                       # Playlist name
+            returnData["data"]["url"] = responseJson["external_urls"]["spotify"]    # Playlist url
+            returnData["data"]["owner"] = responseJson['owner']                     # Owner details
+            returnData["data"]["images"] = responseJson['images']
 
             # This endpoint is used to retrieve all the possible tracks using a recursive method
             tracksEndpoint = f"https://api.spotify.com/v1/playlists/{id}/tracks"
             tracks = self.retrieveTracksFromPlaylists(tracksEndpoint, headers)
 
-            return tracks
+            # If retrieving tracks was successful, return none
+            if tracks != None:
+                # Tracks retrieved successfully
+                returnData["data"]["has_tracks"] = True
+                returnData["data"]["tracks"] = tracks
+
+            else:
+                returnData["data"]["has_tracks"] = False
+
+
+            return returnData
 
 
     def retrieveTracksFromPlaylists(self, endpoint, headers):
@@ -201,10 +245,12 @@ class SpotifyAPI:
         # Process response
         if response.status_code != 200:
             # If an error occurs
-            print_DT("Failed to retrieve all tracks.")
-            print(f"\tResponse status: {response.status_code}")
-            print(f"\tError message: {responseJson['error']['message']}")
-            raise Exception("Failed to retrieve all tracks")
+            if self.print:
+                print_DT("Failed to retrieve all tracks.")
+                print(f"\tResponse status: {response.status_code}")
+                print(f"\tError message: {responseJson['error']['message']}")
+            
+            return None
         
         else:
             # Successfully received tracks    
