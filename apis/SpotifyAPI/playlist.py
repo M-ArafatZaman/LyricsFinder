@@ -1,8 +1,8 @@
-from .main import SpotifyAPI
+from .users import SpotifyUserAPI
 import requests, json
 from utils.utils import print_DT
 
-class SpotifyPlaylistAPI(SpotifyAPI):
+class SpotifyPlaylistAPI(SpotifyUserAPI):
     '''
     This class inherits from the parent SpotifyAPI class
     '''

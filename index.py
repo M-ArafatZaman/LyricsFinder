@@ -39,6 +39,10 @@ if __name__ == "__main__":
     playlistData = app.SpotifyAPI.getPlaylistByID("0EXoQPnNMvYKnGp3hyhTQj")
     print(json.dumps(playlistData, indent=4))
 
+    #userData = app.SpotifyAPI.getUserByID("u9urf67p3ekua3gixkbnleilr")
+    #print(json.dumps(userData, indent=4))
+    
+
     """ searchReturn = app.searchPlaylist("https://open.spotify.com/playlist/1dNDQQwOmMkxsGWlngjaDK?si=baf37b5bf291487f", "empty")
     print(searchReturn) """
 
