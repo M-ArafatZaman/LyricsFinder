@@ -55,28 +55,36 @@ class SpotifyPlaylistAPI(SpotifyAPI):
 
             # This endpoint is used to retrieve all the possible tracks using a recursive method
             tracksEndpoint = f"https://api.spotify.com/v1/playlists/{id}/tracks"
-            tracks = self.retrieveTracksFromPlaylists(tracksEndpoint, headers)
+            tracks = self.retrieveTracksFromPlaylists(tracksEndpoint)
 
-            # If retrieving tracks was successful, return none
-            if tracks != None:
-                # Tracks retrieved successfully
+            
+            if tracks["has_all_tracks"]:
+                # All Tracks retrieved successfully
+                returnData["data"]["has_all_tracks"] = True
+            else:
+                returnData["data"]["has_all_tracks"] = False
+
+            # Check if ANY tracks has been retrieved
+            if type(tracks["tracks"]) == list:
                 returnData["data"]["has_tracks"] = True
-                returnData["data"]["tracks"] = tracks
-
+                returnData["data"]["tracks"] = tracks["tracks"]
             else:
                 returnData["data"]["has_tracks"] = False
+                returnData["data"]["tracks"] = None
 
 
             return returnData
 
 
-    def retrieveTracksFromPlaylists(self, endpoint, headers):
+    def retrieveTracksFromPlaylists(self, endpoint):
         '''
         This method executes the get request to retrieve the playlist
         Since the spotify API only returns a maximum of 100 tracks per API hit,
         it also checks if there are any more tracks left to retrieve
         '''
         trackItems = []
+
+        headers = self.getBearerHeaders()
 
         # Send request and convert response to json
         response = requests.get(endpoint, headers=headers)
@@ -90,7 +98,10 @@ class SpotifyPlaylistAPI(SpotifyAPI):
                 print(f"\tResponse status: {response.status_code}")
                 print(f"\tError message: {responseJson['error']['message']}")
             
-            return None
+            return {
+                "has_all_tracks": False,
+                "tracks": None
+            }
         
         else:
             # Successfully received tracks    
@@ -100,8 +111,30 @@ class SpotifyPlaylistAPI(SpotifyAPI):
             if nextEndpoint == None:
                 # All tracks has been retrieved
                 if self.print: print_DT("All tracks has been retrieved.")
-                return trackItems
+
+                return {
+                    "has_all_tracks": True,
+                    "tracks": trackItems
+                }
             
             else: 
-                # There are more tracks to be retrieved
-                return trackItems + self.retrieveTracksFromPlaylists(nextEndpoint, headers)
+                nextTracks = self.retrieveTracksFromPlaylists(nextEndpoint)
+
+                # If there ARE tracks from the nextEndpoint, combine them
+                totalTracks = trackItems
+                if type(nextTracks["tracks"]) == list:
+                    totalTracks = trackItems + nextTracks["tracks"]
+
+                if nextTracks["has_all_tracks"] == True:
+                    # all next tracks has been successfully retrieved
+                    return {
+                        "has_all_tracks": True,
+                        "tracks": totalTracks
+                    }
+                
+                else:
+                    # Not all tracks have been retrieved
+                    return {
+                        "has_all_tracks": False,
+                        "tracks": totalTracks
+                    }

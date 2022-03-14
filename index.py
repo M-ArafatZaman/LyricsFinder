@@ -6,6 +6,7 @@ Mohammad Arafat Zaman
 All rights reserved
 '''
 from app import LyricsFinder
+import json
 
 '''
 In the current directory, the client credentials of your spotify developers app,
@@ -36,7 +37,7 @@ if __name__ == "__main__":
     app = LyricsFinder(CLIENT_ID, CLIENT_SECRET, GENIUS_ACCESS_TOKEN)
 
     playlistData = app.SpotifyAPI.getPlaylistByID("0EXoQPnNMvYKnGp3hyhTQj")
-    print(playlistData)
+    print(json.dumps(playlistData, indent=4))
 
     """ searchReturn = app.searchPlaylist("https://open.spotify.com/playlist/1dNDQQwOmMkxsGWlngjaDK?si=baf37b5bf291487f", "empty")
     print(searchReturn) """
