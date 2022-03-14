@@ -30,17 +30,18 @@ if __name__ == "__main__":
     playlist_json = api.getPlaylistByID("1dNDQQwOmMkxsGWlngjaDK")
     tracks = getTracks(playlist_json) """
 
-    genius = GeniusAPI(GENIUS_ACCESS_TOKEN)
+    """ genius = GeniusAPI(GENIUS_ACCESS_TOKEN)
 
 
     hits = genius.searchSongs("Kendrick lamar humble")
     url = getTopLyricsUrl(hits)
     lyrics = scrapeLyricsFromURL(url)
-    print(lyrics)
+    print(lyrics) """
 
-    """ app = LyricsFinder(CLIENT_ID, CLIENT_SECRET, GENIUS_ACCESS_TOKEN)
+    app = LyricsFinder(CLIENT_ID, CLIENT_SECRET, GENIUS_ACCESS_TOKEN)
 
-    app.searchPlaylist("https://open.spotify.com/playlist/1dNDQQwOmMkxsGWlngjaDK?si=baf37b5bf291487f", "empty") """
+    searchReturn = app.searchPlaylist("https://open.spotify.com/playlist/1dNDQQwOmMkxsGWlngjaDK?si=baf37b5bf291487f", "empty")
+    print(searchReturn)
 
 
 

@@ -3,7 +3,9 @@ from controllers.playlistExtractor import getTracks, getTrackNames
 from controllers.lyricsExtractor import getTopLyricsUrl
 from controllers.webscraper import scrapeLyricsFromURL
 from controllers.loader import Loader
-from time import sleep
+# Types
+from appTypes import ReturnedLyrics
+from typing import List
 
 class LyricsFinder:
 
@@ -40,11 +42,15 @@ class LyricsFinder:
         return id_[:len(EXAMPLE_ID)]
 
 
-    def searchPlaylist(self, playlistURL: str, keywords: str):
+    def searchPlaylist(self, playlistURL: str, keywords: str) -> List[ReturnedLyrics]:
         '''
         This method searches the playlist url through the Spotify API, 
         then uses the GeniusAPI to get the lyrics and searches for keywords
         '''
+
+        result: List[ReturnedLyrics] = []
+
+        # Retrieve playlist and tracks
         playlistID = self.parseSpotifyURL(playlistURL)
         playlistJSON = self.SpotifyAPI.getPlaylistByID(playlistID)
         tracksJSON = getTracks(playlistJSON)
@@ -55,15 +61,45 @@ class LyricsFinder:
         if self.print: 
             searchLoader = Loader(0, f"Searching tracks 0/{totalTracks}")
             searchLoader.start()
-        # Iterate through each in trackname
+
+        # Iterate through each songs
         for i, name in enumerate(trackNames):
+            match: bool = False
+            keywordsMatched: List[str] = []
             # Search song in genius api
             hits = self.GeniusAPI.searchSongs(name)
             url = getTopLyricsUrl(hits)
             lyrics = scrapeLyricsFromURL(url)
+
+            # Check if any of the keywords is present in the lyrics
+            if keywords in lyrics:
+                # The exact keyword is matched
+                match = True
+                keywordsMatched.append(keywords)
+
+            # If there is still no match, Split keywords at each commas and iterate through keyword
+            if not match:            
+                for keyword in keywords.split(","):
+                    if keyword in lyrics:
+                        # A match has been found
+                        match = True
+                        keywordsMatched.append(keyword)
+
+            # If there is a match
+            if match:
+                result.append({
+                    "name": name,
+                    "lyrics": lyrics,
+                    "snippets": [""],
+                    "keywords": keywordsMatched
+                })
+
+
             if self.print: searchLoader.update((i+1)/totalTracks, f"Searching tracks {i+1}/{totalTracks}")
         
         searchLoader.close()
+
+        return result
 
 
 
