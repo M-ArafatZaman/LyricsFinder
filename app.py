@@ -1,5 +1,5 @@
 from apis import GeniusAPI
-from apis.SpotifyAPI import index as SpotifyAPI
+from apis.SpotifyAPI.playlist import SpotifyPlaylistAPI
 from controllers.playlistExtractor import getTracks, getTrackNames
 from controllers.lyricsExtractor import getTopLyricsUrl
 from controllers.webscraper import scrapeLyricsFromURL
@@ -18,7 +18,7 @@ class LyricsFinder:
         self.print = _print
 
         # Initialize API
-        self.SpotifyAPI = SpotifyAPI.SpotifyAPI(self.SPOTIFY_CLIENT_ID, self.SPOTIFY_CLIENT_SECRET)
+        self.SpotifyAPI = SpotifyPlaylistAPI(self.SPOTIFY_CLIENT_ID, self.SPOTIFY_CLIENT_SECRET)
         self.GeniusAPI = GeniusAPI.GeniusAPI(self.GENIUS_ACCESS_TOKEN)
 
     
