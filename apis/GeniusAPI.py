@@ -6,8 +6,9 @@ class GeniusAPI:
     This class connects to the genius API using just a "semi-public" access token so it can only access endpoints
     which are not private. 
     '''
-    def __init__(self, access_token):
+    def __init__(self, access_token, _print=True):
         self.access_token = access_token
+        self.print = _print
 
 
     def searchSongs(self, searchTerm):
@@ -29,10 +30,13 @@ class GeniusAPI:
 
         if response.status_code != 200:
             # Failed request
-            print_DT(f"Failed to retrieve song '{searchTerm}'.")
-            print(f"\tResponse status: {response.status_code}")
-            print(f"\tError message: {responseJson['meta']['message']}")
-            raise Exception(f"Failed to retrieve song '{searchTerm}'.")
+            if self.print:
+                print_DT(f"Failed to retrieve song '{searchTerm}'.")
+                print(f"\tResponse status: {response.status_code}")
+                print(f"\tError message: {responseJson['meta']['message']}")
+            
+            # Just return an empty list so that it is handled as if there were no hits
+            return []
         else:
             # Successfully retrieved song
             

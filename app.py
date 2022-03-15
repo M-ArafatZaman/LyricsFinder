@@ -1,6 +1,6 @@
 from apis import GeniusAPI
 from apis.SpotifyAPI.playlist import SpotifyPlaylistAPI
-from controllers.playlistExtractor import getTracks, getTrackNames
+from controllers.playlistExtractor import getTrackName
 from controllers.lyricsExtractor import getTopLyricsUrl
 from controllers.webscraper import scrapeLyricsFromURL
 from controllers.loader import Loader
@@ -43,20 +43,19 @@ class LyricsFinder:
         return id_[:len(EXAMPLE_ID)]
 
 
-    def searchPlaylist(self, playlistURL: str, keywords: str) -> List[ReturnedLyrics]:
+    def searchPlaylist(self, playlistURL: str, keywords: str):
         '''
         This method searches the playlist url through the Spotify API, 
         then uses the GeniusAPI to get the lyrics and searches for keywords
         '''
 
-        result: List[ReturnedLyrics] = []
+        result = []
 
-        # Retrieve playlist and tracks
+        # Retrieve tracks
         playlistID = self.parseSpotifyURL(playlistURL)
-        playlistJSON = self.SpotifyAPI.getPlaylistByID(playlistID)
-        tracksJSON = getTracks(playlistJSON)
-        trackNames = getTrackNames(tracksJSON)
-        totalTracks = len(trackNames)
+        tracksJSON = self.SpotifyAPI.getTracksFromPlaylistID(playlistID)
+        allTracks = tracksJSON['tracks']
+        totalTracks = len(allTracks)
 
         # Initiate loader
         if self.print: 
@@ -64,11 +63,17 @@ class LyricsFinder:
             searchLoader.start()
 
         # Iterate through each songs
-        for i, name in enumerate(trackNames):
+        for i, track in enumerate(allTracks):
             match: bool = False
             keywordsMatched: List[str] = []
+            # Get track name
+            name = getTrackName(track)
+
             # Search song in genius api
             hits = self.GeniusAPI.searchSongs(name)
+            # If there are no hits, continue to the next one
+            if len(hits) < 1:
+                continue
             url = getTopLyricsUrl(hits)
             lyrics = scrapeLyricsFromURL(url)
 
