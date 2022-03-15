@@ -1,6 +1,7 @@
 from .users import SpotifyUserAPI
 import requests, json
 from utils.utils import print_DT
+from controllers.query import parseDictToQuery
 
 class SpotifyPlaylistAPI(SpotifyUserAPI):
     '''
@@ -10,11 +11,51 @@ class SpotifyPlaylistAPI(SpotifyUserAPI):
         super().__init__(clientID, clientSecret, _print)
 
     
-    # Get a playlist from the api 
+    # Get playlist by ID
     def getPlaylistByID(self, id):
         '''
-        Documentation - https://developer.spotify.com/console/get-playlist/
+        This API gets details from getPlaylistDetailsByID and retrieveTracksFromPlaylistID, and combines them
         '''
+
+        details = self.getPlaylistDetailsByID(id)
+        tracks = self.getTracksFromPlaylistID(id)
+
+        returnData = {
+            "status": False
+        }
+        
+        if details["status"] == True:
+            returnData["status"] = True
+            returnData["data"] = {
+                "playlist": details["data"],
+                "has_all_tracks": tracks["has_all_tracks"],
+                "items": tracks["tracks"]
+            }
+
+        return returnData
+
+    
+    # Get playlist details from the api 
+    def getPlaylistDetailsByID(self, id):
+        '''
+        Documentation - https://developer.spotify.com/console/get-playlist/
+
+        Fields=external_urls,name,images,owner(display_name,id)
+        '''
+        # Create query | Retrieve only required fields
+        queryFields = {
+            "external_urls": str,
+            "name": str,
+            "images": str,
+            "owner": {
+                "display_name": str,
+                "id": str
+            }
+        }
+
+        query = parseDictToQuery(queryFields)
+        
+
         returnData = {
             "status": False,
             "data": {}
@@ -23,11 +64,14 @@ class SpotifyPlaylistAPI(SpotifyUserAPI):
         # Even though this endpoint contains tracks, it will only be used to collect basic playlist info.
         endpoint = f'https://api.spotify.com/v1/playlists/{id}'
         headers = self.getBearerHeaders()
+        parameters = {
+            "fields": query
+        }
 
         # Send request
         if self.print: print_DT("Retrieving playlist details...")
 
-        response = requests.get(endpoint, headers=headers)
+        response = requests.get(endpoint, headers=headers, params=parameters)
         # Convert response to json
         responseJson = json.loads(response.text)
 
@@ -42,52 +86,72 @@ class SpotifyPlaylistAPI(SpotifyUserAPI):
             return returnData
 
         else:
-            
+            # Playlist details has been successfully retrieved
             if self.print: print_DT(f"Successfully retrieved playlist details => {responseJson['name']} by {responseJson['owner']['display_name']}")
 
             if self.print: print_DT(f"Retrieving tracks from '{responseJson['name']}'...")
 
+
             returnData["status"] = True
-            returnData["data"]["name"] = responseJson['name']                       # Playlist name
-            returnData["data"]["url"] = responseJson["external_urls"]["spotify"]    # Playlist url
-            returnData["data"]["owner"] = responseJson['owner']                     # Owner details
-            returnData["data"]["images"] = responseJson['images']
+            returnData["data"] = responseJson
 
-            # This endpoint is used to retrieve all the possible tracks using a recursive method
-            tracksEndpoint = f"https://api.spotify.com/v1/playlists/{id}/tracks"
-            tracks = self.retrieveTracksFromPlaylists(tracksEndpoint)
-
-            
-            if tracks["has_all_tracks"]:
-                # All Tracks retrieved successfully
-                returnData["data"]["has_all_tracks"] = True
-            else:
-                returnData["data"]["has_all_tracks"] = False
-
-            # Check if ANY tracks has been retrieved
-            if type(tracks["tracks"]) == list:
-                returnData["data"]["has_tracks"] = True
-                returnData["data"]["tracks"] = tracks["tracks"]
-            else:
-                returnData["data"]["has_tracks"] = False
-                returnData["data"]["tracks"] = None
-
+            # Get owner details
+            ownerDetailsResponse = self.getUserByID(responseJson["owner"]["id"])
+            if ownerDetailsResponse["status"] == True:
+                # Successfully retrieved owner details
+                returnData["data"]["owner"] = ownerDetailsResponse["data"]
 
             return returnData
 
 
-    def retrieveTracksFromPlaylists(self, endpoint):
+    def getTracksFromPlaylistID(self, id):
+        '''
+        https://developer.spotify.com/console/get-playlist-tracks/
+
+        Fields = items(track(album(images),artists(name),external_urls,name)),next
+        '''
+        # Create and parse query
+        queryFields = {
+            "items": {
+                "track": {
+                    "album": {
+                        "images": str
+                    },
+                    "artists": {
+                        "name": str
+                    },
+                    "external_urls": str,
+                    "name": str,
+                    "preview_url": str
+                }
+            },
+            "next": str
+        }
+
+        query = parseDictToQuery(queryFields)
+
+        endpoint = f"https://api.spotify.com/v1/playlists/{id}/tracks"
+
+        parameters = {
+            "fields" : query
+        }
+
+        trackItems = self.recursivelyRetrieveTracksFromPlaylistEndpoint(endpoint, parameters)
+
+        return trackItems
+
+    def recursivelyRetrieveTracksFromPlaylistEndpoint(self, endpoint, parameters={}):
         '''
         This method executes the get request to retrieve the playlist
         Since the spotify API only returns a maximum of 100 tracks per API hit,
-        it also checks if there are any more tracks left to retrieve
+        it also checks if there are any more tracks left to retrieve.
         '''
         trackItems = []
 
         headers = self.getBearerHeaders()
 
         # Send request and convert response to json
-        response = requests.get(endpoint, headers=headers)
+        response = requests.get(endpoint, headers=headers, params=parameters)
         responseJson = json.loads(response.text)
 
         # Process response
@@ -118,7 +182,7 @@ class SpotifyPlaylistAPI(SpotifyUserAPI):
                 }
             
             else: 
-                nextTracks = self.retrieveTracksFromPlaylists(nextEndpoint)
+                nextTracks = self.recursivelyRetrieveTracksFromPlaylistEndpoint(nextEndpoint, parameters)
 
                 # If there ARE tracks from the nextEndpoint, combine them
                 totalTracks = trackItems
