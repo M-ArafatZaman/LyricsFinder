@@ -45,11 +45,18 @@ class SpotifyPlaylistAPI(SpotifyUserAPI):
         # Create query | Retrieve only required fields
         queryFields = {
             "external_urls": str,
+            "description": str,
             "name": str,
             "images": str,
             "owner": {
                 "display_name": str,
                 "id": str
+            },
+            "followers": {
+                "total": int
+            },
+            "tracks": {
+                "total": int
             }
         }
 
