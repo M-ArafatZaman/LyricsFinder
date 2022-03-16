@@ -1,3 +1,4 @@
+import json
 from apis import GeniusAPI
 from apis.SpotifyAPI.playlist import SpotifyPlaylistAPI
 from controllers.playlistExtractor import getTrackName
@@ -5,7 +6,7 @@ from controllers.lyricsExtractor import getTopLyricsUrl
 from controllers.webscraper import scrapeLyricsFromURL
 from controllers.loader import Loader
 # Types
-from appTypes import ReturnedLyrics
+from appTypes import ReturnedLyrics, SnippetType
 from typing import List
 
 class LyricsFinder:
@@ -36,14 +37,14 @@ class LyricsFinder:
         pre_id = url[:len(DOMAIN)]
 
         if pre_id != DOMAIN:
-            raise Exception("Not a valid spotify playlist URL.")
+            raise None
 
         id_ = url[len(DOMAIN):]
         
         return id_[:len(EXAMPLE_ID)]
 
 
-    def searchPlaylist(self, playlistURL: str, keywords: str):
+    def searchPlaylist(self, playlistURL: str, keywords: str) -> List[ReturnedLyrics]:
         '''
         This method searches the playlist url through the Spotify API, 
         then uses the GeniusAPI to get the lyrics and searches for keywords
@@ -53,6 +54,8 @@ class LyricsFinder:
 
         # Retrieve tracks
         playlistID = self.parseSpotifyURL(playlistURL)
+        if playlistID == None:
+            return result
         tracksJSON = self.SpotifyAPI.getTracksFromPlaylistID(playlistID)
         allTracks = tracksJSON['tracks']
         totalTracks = len(allTracks)
@@ -90,11 +93,37 @@ class LyricsFinder:
 
             # If there is a match
             if match:
+                '''
+                Preparing return values
+                '''
+                snippet: List[SnippetType] = []
+                # For each keyword(s) matched, generate a snippet
+                for eachKeyword in keywordsMatched:
+                    snippet.append({
+                        "keyword": eachKeyword,
+                        "snippet": self.generateSnippet(lyrics, eachKeyword)
+                    })
+                
+                # Get image of song (Album cover for now)
+                albumImages = track["track"]["album"]["images"]
+                imageURL = None
+                if len(albumImages) >= 0:
+                    imageURL = albumImages[0]["url"]
+
+                # Prepare artist name
+                artistsArr = []
+                for artist in track["track"]["artists"]:
+                    artistsArr.append(artist["name"])
+                artists = ', '.join(artistsArr)
+
                 result.append({
-                    "name": name,
+                    "name": track["track"]["name"],
                     "lyrics": lyrics,
-                    "snippets": [""],
-                    "keywords": keywordsMatched
+                    "snippets": snippet,
+                    "imageURL": imageURL,
+                    "artists": artists,
+                    "url": track["track"]["external_urls"]["spotify"],
+                    "previewURL": track["track"]["preview_url"]
                 })
 
 
