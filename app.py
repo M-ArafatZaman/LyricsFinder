@@ -74,8 +74,8 @@ class LyricsFinder:
             if lyrics == None:
                 continue
 
-            # Check if any of the keywords is present in the lyrics
-            if keywords in lyrics:
+            # Check if the keyword phrase is present in the lyrics
+            if keywords.lower() in lyrics.lower():
                 # The exact keyword is matched
                 match = True
                 keywordsMatched.append(keywords)
@@ -83,7 +83,7 @@ class LyricsFinder:
             # If there is still no match, Split keywords at each commas and iterate through keyword
             if not match:            
                 for keyword in keywords.split(","):
-                    if keyword in lyrics:
+                    if keyword.lower() in lyrics.lower():
                         # A match has been found
                         match = True
                         keywordsMatched.append(keyword)
@@ -120,7 +120,51 @@ class LyricsFinder:
 
         return lyrics
 
+
+    def generateSnippet(self, lyrics: str, keyword: str) -> str:
+        '''
+        This function generates snippets from lyrics from a keyword (or phrase)
+        '''
+
+        if keyword.lower() not in lyrics.lower():
+            return None
+
+        snippet = ""
+
+        # Split lyrics at each instances of "\n"
+        lines = lyrics.split("\n")
+
+        # Iterate through each line
+        for i, currentLine in enumerate(lines):
+            # Check current line
+            if keyword.lower() in currentLine.lower():
+                prevLine = None
+                nextLine = None
+                # Get previous and next index only if it is within range
+                if (i - 1) >= 0:
+                    prevLine = lines[i-1]
+                if (i + 1) < len(lines):
+                    nextLine = lines[i+1]
+
+                # If both [ and ] is present in line, OR it is empty, remove it from snippet.
+                # This is to remove lines like "[Chorus]", "[Verse 1]" etc. 
+                if ("[" in prevLine and "]" in prevLine) or (len(prevLine) == 0):
+                    prevLine = None
+                if ("[" in nextLine and "]" in nextLine) or (len(nextLine) == 0):
+                    nextLine = None
+                
+                # Make snippet
+                if prevLine:
+                    snippet += f"{prevLine}\n"
+                snippet += f"{currentLine}\n"
+                if nextLine:
+                    snippet += f"{nextLine}"
+
+                break
         
+        return snippet
+
+                
 
 
 
