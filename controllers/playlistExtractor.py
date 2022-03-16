@@ -15,5 +15,5 @@ def getTrackName(apiResponse) -> List[str]:
     
     artistName = ', '.join(artists)
 
-    return f"{name} - {artistName}"
+    return f"{artistName} - {name}"
 
