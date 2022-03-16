@@ -62,20 +62,17 @@ class LyricsFinder:
             searchLoader = Loader(0, f"Searching tracks 0/{totalTracks}")
             searchLoader.start()
 
-        # Iterate through each songs
+        # Iterate through each track
         for i, track in enumerate(allTracks):
             match: bool = False
             keywordsMatched: List[str] = []
             # Get track name
             name = getTrackName(track)
 
-            # Search song in genius api
-            hits = self.GeniusAPI.searchSongs(name)
-            # If there are no hits, continue to the next one
-            if len(hits) < 1:
+            # Get lyircs, if lyrics is none, continue to the next one
+            lyrics = self.getLyrics(name)
+            if lyrics == None:
                 continue
-            url = getTopLyricsUrl(hits)
-            lyrics = scrapeLyricsFromURL(url)
 
             # Check if any of the keywords is present in the lyrics
             if keywords in lyrics:
@@ -106,6 +103,24 @@ class LyricsFinder:
         searchLoader.close()
 
         return result
+
+    
+    def getLyrics(self, name: str) -> str:
+        '''
+        This method returns the lyrics of a song name
+        '''
+        # Search song in genius api
+        hits = self.GeniusAPI.searchSongs(name)
+        # If there are no hits, return none
+        if len(hits) < 1:
+            return None
+
+        url = getTopLyricsUrl(hits)
+        lyrics = scrapeLyricsFromURL(url)
+
+        return lyrics
+
+        
 
 
 
