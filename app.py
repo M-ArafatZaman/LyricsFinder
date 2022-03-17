@@ -37,7 +37,7 @@ class LyricsFinder:
         pre_id = url[:len(DOMAIN)]
 
         if pre_id != DOMAIN:
-            raise None
+            return None
 
         id_ = url[len(DOMAIN):]
         
