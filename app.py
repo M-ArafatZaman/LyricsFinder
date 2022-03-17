@@ -129,7 +129,7 @@ class LyricsFinder:
 
             if self.print: searchLoader.update((i+1)/totalTracks, f"Searching tracks {i+1}/{totalTracks}")
         
-        searchLoader.close()
+        if self.print: searchLoader.close()
 
         return result
 
