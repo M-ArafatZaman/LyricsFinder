@@ -19,7 +19,7 @@ class ReturnedLyrics:
     lyrics: str
     snippets: Sequence[SnippetType]
     imageURL: str
-    artists: Sequence[ArtistType]
+    artists: str
     url: str
     previewURL: str
 

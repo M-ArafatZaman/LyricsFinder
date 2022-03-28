@@ -55,7 +55,7 @@ class LyricsFinder:
         # Retrieve tracks
         playlistID = self.parseSpotifyURL(playlistURL)
         if playlistID == None:
-            return result
+            return None
         tracksJSON = self.SpotifyAPI.getTracksFromPlaylistID(playlistID)
         allTracks = tracksJSON['tracks']
         totalTracks = len(allTracks)
