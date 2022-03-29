@@ -1,5 +1,6 @@
 import requests, json
 from utils.utils import print_DT
+import time
 
 class GeniusAPI:
     '''
@@ -11,7 +12,7 @@ class GeniusAPI:
         self.print = _print
 
 
-    def searchSongs(self, searchTerm):
+    def searchSongs(self, searchTerm, cache=True):
         '''
         This method searches for songs using the searchTerm from the genius API.
         Documentation - https://docs.genius.com/#search-h2
@@ -20,6 +21,9 @@ class GeniusAPI:
         params = {
             "q": searchTerm
         }
+        # Add a timestamp if cache is false
+        if not cache: params["time"] = str(time.time())
+
         headers = {
             "Authorization": f"Bearer {self.access_token}"
         }

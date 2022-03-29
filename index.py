@@ -6,6 +6,7 @@ Mohammad Arafat Zaman
 All rights reserved
 '''
 from app import LyricsFinder
+from controllers.webscraper import scrapeLyricsFromURL
 import json
 
 '''
@@ -24,7 +25,7 @@ if __name__ == "__main__":
     # 0EXoQPnNMvYKnGp3hyhTQj - Smol playlist - https://open.spotify.com/playlist/0EXoQPnNMvYKnGp3hyhTQj?si=558511c0b3884667
     # 1erDdxiOr53sQ7SMefPWsw - LyricsFinder - https://open.spotify.com/playlist/1erDdxiOr53sQ7SMefPWsw?si=2d8d40153e764517
 
-    app = LyricsFinder(CLIENT_ID, CLIENT_SECRET, GENIUS_ACCESS_TOKEN)
+    app = LyricsFinder(CLIENT_ID, CLIENT_SECRET, GENIUS_ACCESS_TOKEN, True, False)
 
     #playlist = app.SpotifyAPI.getPlaylistByID("0EXoQPnNMvYKnGp3hyhTQj")
     #print(json.dumps(playlist, indent=4))
@@ -44,6 +45,13 @@ if __name__ == "__main__":
     #lyrics = app.getLyrics("juice wrld hate the other side")
     #s = app.generateSnippet(lyrics, "hate the other side")
     #print(s)
+
+    #geniusHits = app.GeniusAPI.searchSongs("juice wrld empty")
+    #print(json.dumps(geniusHits, indent=4))
+
+    geniusLyrics = scrapeLyricsFromURL("https://genius.com/Juice-wrld-empty-lyrics")
+    print(geniusLyrics)
+
 
 
 

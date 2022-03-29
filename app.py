@@ -11,10 +11,11 @@ from typing import List
 
 class LyricsFinder:
 
-    def __init__(self, SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, GENIUS_ACCESS_TOKEN, _print=True) -> None:
+    def __init__(self, SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, GENIUS_ACCESS_TOKEN, _print=True, cache=True) -> None:
         self.SPOTIFY_CLIENT_ID = SPOTIFY_CLIENT_ID
         self.SPOTIFY_CLIENT_SECRET = SPOTIFY_CLIENT_SECRET
         self.GENIUS_ACCESS_TOKEN = GENIUS_ACCESS_TOKEN
+        self.cache = cache
 
         self.print = _print
 
@@ -139,13 +140,13 @@ class LyricsFinder:
         This method returns the lyrics of a song name
         '''
         # Search song in genius api
-        hits = self.GeniusAPI.searchSongs(name)
+        hits = self.GeniusAPI.searchSongs(name, self.cache)
         # If there are no hits, return none
         if len(hits) < 1:
             return None
 
         url = getTopLyricsUrl(hits)
-        lyrics = scrapeLyricsFromURL(url)
+        lyrics = scrapeLyricsFromURL(url, self.cache)
 
         return lyrics
 
