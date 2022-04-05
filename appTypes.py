@@ -22,5 +22,6 @@ class ReturnedLyrics:
     artists: str
     url: str
     previewURL: str
+    geniusURL: str
 
     

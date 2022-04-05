@@ -74,7 +74,7 @@ class LyricsFinder:
             name = getTrackName(track)
 
             # Get lyircs, if lyrics is none, continue to the next one
-            lyrics = self.getLyrics(name)
+            lyrics, geniusURL = self.getLyricsAndURL(name)
             if lyrics == None:
                 continue
 
@@ -124,7 +124,8 @@ class LyricsFinder:
                     "imageURL": imageURL,
                     "artists": artists,
                     "url": track["track"]["external_urls"]["spotify"],
-                    "previewURL": track["track"]["preview_url"]
+                    "previewURL": track["track"]["preview_url"],
+                    "geniusURL": geniusURL
                 })
 
 
@@ -135,9 +136,9 @@ class LyricsFinder:
         return result
 
     
-    def getLyrics(self, name: str) -> str:
+    def getLyricsAndURL(self, name: str) -> str:
         '''
-        This method returns the lyrics of a song name
+        This method returns the lyrics of a song name and the genius url
         '''
         # Search song in genius api
         hits = self.GeniusAPI.searchSongs(name, self.cache)
@@ -148,7 +149,7 @@ class LyricsFinder:
         url = getTopLyricsUrl(hits)
         lyrics = scrapeLyricsFromURL(url, self.cache)
 
-        return lyrics
+        return lyrics, url
 
 
     def generateSnippet(self, lyrics: str, keyword: str) -> str:

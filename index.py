@@ -39,8 +39,8 @@ if __name__ == "__main__":
     #print(json.dumps(userData, indent=4))
     
 
-    #searchReturn = app.searchPlaylist("https://open.spotify.com/playlist/1erDdxiOr53sQ7SMefPWsw?si=93bfa1d02ffe4372", "empty")
-    #print(json.dumps(searchReturn, indent=4))
+    searchReturn = app.searchPlaylist("https://open.spotify.com/playlist/1erDdxiOr53sQ7SMefPWsw?si=93bfa1d02ffe4372", "empty")
+    print(json.dumps(searchReturn, indent=4))
 
     #lyrics = app.getLyrics("juice wrld hate the other side")
     #s = app.generateSnippet(lyrics, "hate the other side")
@@ -49,8 +49,8 @@ if __name__ == "__main__":
     #geniusHits = app.GeniusAPI.searchSongs("juice wrld empty")
     #print(json.dumps(geniusHits, indent=4))
 
-    geniusLyrics = scrapeLyricsFromURL("https://genius.com/Juice-wrld-empty-lyrics")
-    print(geniusLyrics)
+    #geniusLyrics = scrapeLyricsFromURL("https://genius.com/Juice-wrld-empty-lyrics")
+    #print(geniusLyrics)
 
 
 
