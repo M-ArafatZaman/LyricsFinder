@@ -1,4 +1,5 @@
 import json
+import re
 from apis import GeniusAPI
 from apis.SpotifyAPI.playlist import SpotifyPlaylistAPI
 from controllers.playlistExtractor import getTrackName
@@ -70,11 +71,17 @@ class LyricsFinder:
         for i, track in enumerate(allTracks):
             match: bool = False
             keywordsMatched: List[str] = []
-            # Get track name
-            name = getTrackName(track)
+            # Get song and artist name
+            songName = track["track"]["name"]
+            # Prepare artist name
+            artistsArr = []
+            for artist in track["track"]["artists"]:
+                artistsArr.append(artist["name"])
+            artists = ', '.join(artistsArr)
+
 
             # Get lyircs, if lyrics is none, continue to the next one
-            lyrics, geniusURL = self.getLyricsAndURL(name)
+            lyrics, geniusURL = self.getLyricsAndURL(songName)
             if lyrics == None:
                 continue
 
@@ -111,14 +118,8 @@ class LyricsFinder:
                 if len(albumImages) >= 0:
                     imageURL = albumImages[0]["url"]
 
-                # Prepare artist name
-                artistsArr = []
-                for artist in track["track"]["artists"]:
-                    artistsArr.append(artist["name"])
-                artists = ', '.join(artistsArr)
-
                 result.append({
-                    "name": track["track"]["name"],
+                    "name": songName,
                     "lyrics": lyrics,
                     "snippets": snippet,
                     "imageURL": imageURL,
@@ -140,8 +141,11 @@ class LyricsFinder:
         '''
         This method returns the lyrics of a song name and the genius url
         '''
+        # Remove paranthesis and its content from the song name
+        songName = re.sub(r"(\([^()]*\))", "", name)
+
         # Search song in genius api
-        hits = self.GeniusAPI.searchSongs(name, self.cache)
+        hits = self.GeniusAPI.searchSongs(songName, self.cache)
         # If there are no hits, return none
         if len(hits) < 1:
             return None
