@@ -81,9 +81,10 @@ class LyricsFinder:
 
 
             # Get lyircs, if lyrics is none, continue to the next one
-            lyrics, geniusURL = self.getLyricsAndURL(songName)
-            if lyrics == None:
+            lyricsAndUrl = self.getLyricsAndURL(songName, artistsArr)
+            if lyricsAndUrl == None:
                 continue
+            lyrics, geniusURL = lyricsAndUrl
 
             # Check if the keyword phrase is present in the lyrics
             if keywords.lower() in lyrics.lower():
@@ -137,7 +138,7 @@ class LyricsFinder:
         return result
 
     
-    def getLyricsAndURL(self, name: str) -> str:
+    def getLyricsAndURL(self, name: str, artists: list) -> str:
         '''
         This method returns the lyrics of a song name and the genius url
         '''
@@ -150,7 +151,20 @@ class LyricsFinder:
         if len(hits) < 1:
             return None
 
-        url = getTopLyricsUrl(hits)
+        url = getTopLyricsUrl(hits, songName.split(), artists)
+
+        # If no url is found, return again with artist name
+        if url == None:
+            artistNames = ', '.join(artists)
+            # Search song in genius api
+            hits = self.GeniusAPI.searchSongs(f"{artistNames} {songName}", self.cache)
+            url = getTopLyricsUrl(hits, songName.split(), artists)
+
+            # If it is still none, return None
+            if url == None:
+                return None
+        
+        # Scrape url from GENIUS site
         lyrics = scrapeLyricsFromURL(url, self.cache)
 
         return lyrics, url
