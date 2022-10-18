@@ -8,14 +8,14 @@ All rights reserved
 from app import LyricsFinder
 from controllers.webscraper import scrapeLyricsFromURL
 import json
+from dotenv import load_dotenv
+import os
 
-'''
-In the current directory, the client credentials of your spotify developers app,
-and an access token of your GENIUS app is stored in a settings.py file. 
-It is currently ignored by .gitignore for security reasons.
-This is not the most secure way to do it I know, but whatever lol. 
-'''
-from settings import CLIENT_ID, CLIENT_SECRET, GENIUS_ACCESS_TOKEN
+load_dotenv()
+
+CLIENT_ID = os.getenv("CLIENT_ID")                      # Spotify client ID
+CLIENT_SECRET = os.getenv("CLIENT_SECRET")              # Spotify secret key
+GENIUS_ACCESS_TOKEN = os.getenv("GET_ACCESS_TOKEN")     # Genius access token
 
 
 if __name__ == "__main__":
@@ -39,19 +39,22 @@ if __name__ == "__main__":
     #print(json.dumps(userData, indent=4))
     
 
-    searchReturn = app.searchPlaylist("https://open.spotify.com/playlist/1erDdxiOr53sQ7SMefPWsw?si=93bfa1d02ffe4372", "empty")
-    print(json.dumps(searchReturn, indent=4))
+    #searchReturn = app.searchPlaylist("https://open.spotify.com/playlist/1erDdxiOr53sQ7SMefPWsw?si=93bfa1d02ffe4372", "cartel")
+    #print(json.dumps(searchReturn, indent=4))
 
-    #lyrics = app.getLyrics("juice wrld hate the other side")
-    #s = app.generateSnippet(lyrics, "hate the other side")
-    #print(s)
+    #lyricsAndURL = app.getLyricsAndURL("righteous", ["juice wrld"])
+    #s = app.generateSnippet(lyrics, "right hand")
+    #print(lyricsAndURL)
 
-    #geniusHits = app.GeniusAPI.searchSongs("juice wrld empty")
+    #geniusHits = app.GeniusAPI.searchSongs("joyner lucas will")
     #print(json.dumps(geniusHits, indent=4))
+    #print(geniusHits)
 
     #geniusLyrics = scrapeLyricsFromURL("https://genius.com/Juice-wrld-empty-lyrics")
     #print(geniusLyrics)
 
+    LYRICS_FINDER_URL = "https://open.spotify.com/playlist/1erDdxiOr53sQ7SMefPWsw?si=2d8d40153e764517"
 
+    app.loadPlaylist(LYRICS_FINDER_URL)
 
 

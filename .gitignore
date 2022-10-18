@@ -1,3 +1,4 @@
 settings.py
 access_token.json
 __pycache__/
+.env
