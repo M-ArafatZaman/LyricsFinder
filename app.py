@@ -7,7 +7,7 @@ from controllers.lyricsExtractor import getTopLyricsUrl
 from controllers.webscraper import scrapeLyricsFromURL
 from controllers.loader import Loader
 # Types
-from appTypes import ReturnedLyrics, SnippetType
+from appTypes import ReturnedLyrics, SnippetType, ApiResponseLoadPlaylist
 from typing import List
 
 class LyricsFinder:
@@ -214,6 +214,51 @@ class LyricsFinder:
         return snippet
 
                 
+    def loadPlaylist(self, url: str):
+        
+        returnData = {
+            "status": -1,
+            "message": "NULL"
+        }
+
+        # Check if url is valid
+        id = self.parseSpotifyURL(url)
+
+        if not id:
+            returnData["message"] = "Invalid url."
+            return returnData 
+
+        # URL is valid, get playlist data
+        playlistData: ApiResponseLoadPlaylist = self.SpotifyAPI.getPlaylistByID(id)
+        playlistTracks = playlistData["data"]["items"]
+
+        """
+        Each track will be in the following format
+        {
+            name: str [Song name]
+            artists: str [Each artists joined by comma]
+            imageURL: str [The url to each image]
+            url: str [Spotify url] 
+        }
+        """
+        # Track names in str
+        eachTracks: List[str] = []
+
+        # Iterate through each playlist tracks and get the track name
+        for track in playlistTracks:
+            artistsNames = [i["name"] for i in track["track"]["artists"]]
+
+            eachTracks.append({
+                "name": track["track"]["name"],
+                "artists": ', '.join( artistsNames ),
+                "imageURL": track["track"]["album"]["images"][0]["url"],
+                "url": track["track"]["external_urls"]["spotify"]
+            })
+
+        # Store the track name in the items array
+        playlistData["data"]["items"] = eachTracks
+
+        return playlistData
 
 
 
