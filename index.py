@@ -15,7 +15,7 @@ load_dotenv()
 
 CLIENT_ID = os.getenv("CLIENT_ID")                      # Spotify client ID
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")              # Spotify secret key
-GENIUS_ACCESS_TOKEN = os.getenv("GET_ACCESS_TOKEN")     # Genius access token
+GENIUS_ACCESS_TOKEN = os.getenv("GENIUS_ACCESS_TOKEN")     # Genius access token
 
 
 if __name__ == "__main__":
