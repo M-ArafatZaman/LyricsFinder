@@ -300,7 +300,7 @@ class LyricsFinder:
                     match = True
                     keywordsMatched.append(keyword)
 
-        result = {}
+        result = None
         # If there is a match
         if match:
             '''
