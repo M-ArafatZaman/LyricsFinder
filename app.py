@@ -261,5 +261,78 @@ class LyricsFinder:
         return playlistData
 
 
+    def scanSong(self, songName: str, artists: str, keywords: str):
+        """
+        This function searches for keywords in a song
+        """
 
+        artistsArr = artists.split(",")
+
+        lyricsAndUrl = self.getLyricsAndURL(songName, artistsArr)
+
+        if lyricsAndUrl == None:
+            # Return None if no lyrics is found
+            return None
+        
+        else: 
+            lyrics, geniusURL = lyricsAndUrl
+
+        match: bool = False
+        keywordsMatched: List[str] = []
+
+        # Check if the keyword phrase is present in the lyrics
+        if keywords.lower() in lyrics.lower():
+            # The exact keyword is matched
+            match = True
+            keywordsMatched.append(keywords)
+
+        # If there is still no match, Split keywords at each commas and iterate through keyword
+        if not match:            
+            for keyword in keywords.split(","):
+                if keyword.lower() in lyrics.lower():
+                    # A match has been found
+                    match = True
+                    keywordsMatched.append(keyword)
+
+        result = {}
+        # If there is a match
+        if match:
+            '''
+            Preparing return values
+            '''
+            snippet: List[SnippetType] = []
+            # For each keyword(s) matched, generate a snippet
+            for eachKeyword in keywordsMatched:
+                snippet.append({
+                    "keyword": eachKeyword,
+                    "snippet": self.generateSnippet(lyrics, eachKeyword)
+                })
+
+            """ 
+            The response in the following format
+            {
+                "name": str,
+                "artists": str,
+                "lyrics": str,
+                "snippets": [
+                    {
+                        "keyword": str,
+                        "snippet": str
+                    }
+                ],
+                "geniusURL": str
+            }
+            """
+            result = {
+                "name": songName,
+                "artists": artists,
+                "lyrics": lyrics,
+                "snippets": snippet,
+                "geniusURL": geniusURL
+            }
+
+        return result
+
+
+        
         
