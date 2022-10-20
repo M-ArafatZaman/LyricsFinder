@@ -230,6 +230,12 @@ class LyricsFinder:
 
         # URL is valid, get playlist data
         playlistData: ApiResponseLoadPlaylist = self.SpotifyAPI.getPlaylistByID(id)
+
+        # If status is false, return a failed message
+        if not playlistData["status"]: 
+            returnData["message"] = "Unable to load playlist."
+            return returnData
+
         playlistTracks = playlistData["data"]["items"]
 
         """
