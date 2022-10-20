@@ -38,7 +38,7 @@ class GeniusAPI:
             if self.print:
                 print_DT(f"Failed to retrieve song '{searchTerm}'.")
                 print(f"\tResponse status: {response.status_code}")
-                print(f"\tError message: {responseJson['meta']['message']}")
+                print(f"\tError message: {responseJson['error']}")
             
             # Just return an empty list so that it is handled as if there were no hits
             return []
